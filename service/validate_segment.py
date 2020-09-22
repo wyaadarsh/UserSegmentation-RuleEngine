@@ -19,27 +19,25 @@ class Evaluation:
         self.user_data = user_data
         self.rule = db.get_rule(segment_id)
 
-    def evaluate(self):
+    def validate(self):
 
         def examine_rule(entities):
             if isinstance(entities, dict):
                 if len(entities.keys()) != 1: raise Exception("Invalid Rule")
                 entity = next(iter(entities))
                 entity_val = entities[entity]
+                if entity in allowed_rule_params:
+                    return validate_user_data(entity, entity_val)
                 if entity in allowed_conjunctors:
-                    continue_, return_ = evaluate_conjunctor(entity, entity_val)
-                    if not continue_: return return_
-                return validate_user_data(entity, entity_val)
-
-        def evaluate_conjunctor(entity, entity_val):
-            eval_func = ConjunctorConfig.get(entity)
-            if not isinstance(entity_val, list):
-                raise Exception("Invalid Rule")
-            for i in entity_val:
-                val, break_on_true, break_on_false = examine_rule(i)
-                if val and break_on_true: return False, val
-                if not val and break_on_false: return False, val
-                return True, val
+                    break_on_true, break_on_false = ConjunctorConfig.get(entity).break_on_true_false()
+                    res = None
+                    for i in entity_val:
+                        result = examine_rule(i)
+                        if break_on_true and result: return result
+                        if break_on_false and not result: return result
+                        if res is None: res = result
+                        else: res = ConjunctorConfig.get(entity).evaluate(res, result)
+                    return res
 
         def validate_user_data(entity, entity_val):
             return evaluate_expression(
@@ -65,23 +63,29 @@ def evaluate_expression(entity, operator, value, user_data):
 if __name__ == "__main__":
     segment_1 = {
         "and": [
-            ["rule0"],
-            [
-                {
-                    "or":
-                        [
-                            [
+            {
+                "and":
+                [
+                    {"gender": {"value": "F", "op": "eq"}},
+                    {"gender": {"value": "F", "op": "eq"}}
+                ]
+            },
+            {
+                "or":
+                    [
+                        {
+                            "and": [
                                 {"gender": {"value": "F", "op": "eq"}},
                                 {"gender": {"value": "F", "op": "eq"}}
-                            ],
-                            [
-                                {"age": {"value": "15", "op": "eq"}}
-                            ],
-                            [
-                                {"and": {"rule4", "rule5"}}
                             ]
-                        ]
-                }
-            ]
+                        },
+                        {
+                            "age": {"value": "15", "op": "eq"}
+                        }
+                    ]
+            }
         ]
     }
+
+    # Leaf level dict
+    # list of evaluatable entitites superceeded by operator
