@@ -1,0 +1,44 @@
+{
+    "gender": {
+        "operator": "neq",
+        "value": "female"
+    },
+    "or": {
+      "preference.food": {
+        "operator": "eq",
+        "value": "red-meat"
+      },
+      "and": {
+        "order_count": {
+        "operator": "le",
+        "value": 300
+        },
+        "order_count": {
+        "operator": "gt",
+        "value": 100
+        }
+      },
+      "and": {
+        "city": {
+          "value": "vegas",
+          "operator": "ne"
+        },
+        "city": {
+          "value":
+        }
+      }
+    }
+}
+
+attribute:
+string(set of enum) -
+  order_count,
+  creation_date,
+  user_type,
+  preference.food,
+  preference.price,
+  city,
+  user_category,
+  age,
+  gender
+value: string/integer/datetime/enum

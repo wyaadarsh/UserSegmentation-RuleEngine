@@ -1,0 +1,6 @@
+pymongo
+Flask==1.1.2
+redis
+mongoengine
+PyYAML
+dnspython
