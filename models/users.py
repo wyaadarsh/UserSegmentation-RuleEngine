@@ -1,6 +1,5 @@
 import datetime
-from mongoengine import Document, StringField, DateTimeField, IntField, EmailField, MapField
-import mongoengine
+from mongoengine import Document, StringField, DateTimeField, IntField, EmailField, MapField, DictField
 
 
 class User(Document):
@@ -10,8 +9,6 @@ class User(Document):
     last_updated = DateTimeField(default=datetime.datetime.now)
     yob = IntField(required=True, max_value=2050, min_value=1920)
     email = EmailField(required=False)
-    preference = MapField()
+    preference = DictField()
 
-class Rule(Document):
-    pass
 

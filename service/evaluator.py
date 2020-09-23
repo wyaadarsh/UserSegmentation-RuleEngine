@@ -1,3 +1,4 @@
+from utils.exceptions import InvalidRuleException
 from utils.operators import operators_config
 from utils.conjunctor_config import ConjunctorConfig
 from utils.user_getter import UserGetter
@@ -15,31 +16,33 @@ allowed_rule_params = set(YAMLReader.load_config_from_yml(cur_dir, "/allowed_rul
 
 
 class Evaluation:
-    def __init__(self, user_data, segment_id):
+    def __init__(self, user_data, segment_rule):
         self.user_data = user_data
-        self.rule = db.get_rule(segment_id)
+        self.rule = segment_rule
 
-    def validate(self):
+    def validate(self, evaluate=True):
 
-        def examine_rule(entities):
+        def examine_rule(entities, evaluate=True):
             if isinstance(entities, dict):
-                if len(entities.keys()) != 1: raise Exception("Invalid Rule")
+                if len(entities.keys()) != 1: raise InvalidRuleException
                 entity = next(iter(entities))
                 entity_val = entities[entity]
                 if entity in allowed_rule_params:
-                    return validate_user_data(entity, entity_val)
+                    if evaluate: return evaluate_user_data(entity, entity_val)
+                    return validate_leaf_level_expression(entity_val)
                 if entity in allowed_conjunctors:
                     break_on_true, break_on_false = ConjunctorConfig.get(entity).break_on_true_false()
                     res = None
                     for i in entity_val:
-                        result = examine_rule(i)
+                        result = examine_rule(i, evaluate)
                         if break_on_true and result: return result
                         if break_on_false and not result: return result
                         if res is None: res = result
                         else: res = ConjunctorConfig.get(entity).evaluate(res, result)
                     return res
+            raise InvalidRuleException
 
-        def validate_user_data(entity, entity_val):
+        def evaluate_user_data(entity, entity_val):
             return evaluate_expression(
                 entity,
                 entity_val.get('op'),
@@ -47,8 +50,19 @@ class Evaluation:
                 self.user_data
             )
 
-        return examine_rule(self.rule)
+        def validate_leaf_level_expression(entity_val):
+            return expression_validator(
+                entity_val.get('op'),
+                entity_val.get('value')
+            )
 
+        return examine_rule(self.rule, evaluate)
+
+
+def expression_validator(operator, value):
+    if operator not in allowed_operators:
+        raise InvalidRuleException
+    return True
 
 def evaluate_expression(entity, operator, value, user_data):
     val = UserGetter(user_data).get_entity(entity)
@@ -62,12 +76,12 @@ def evaluate_expression(entity, operator, value, user_data):
 
 if __name__ == "__main__":
     segment_1 = {
-        "and": [
+        "or": [
             {
-                "and":
+                "or":
                 [
                     {"gender": {"value": "F", "op": "eq"}},
-                    {"gender": {"value": "F", "op": "eq"}}
+                    {"gender": {"value": "M", "op": "eq"}}
                 ]
             },
             {
@@ -89,3 +103,18 @@ if __name__ == "__main__":
 
     # Leaf level dict
     # list of evaluatable entitites superceeded by operator
+
+
+    user_data = {
+        "name": "Asha",
+        "gender": "F",
+        "age": 15
+    }
+    print(Evaluation(user_data, 1).validate())
+
+    user_data = {
+        "name": "Asha1",
+        "gender": "M",
+        "age": 20
+    }
+    print(Evaluation(user_data, 1).validate())
