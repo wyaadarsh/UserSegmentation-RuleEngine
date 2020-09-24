@@ -57,6 +57,9 @@ Simply run:
     
 The service runs on port 7070
 
+### Meat of Algo:
+
+service/evaluator.py - Recursive algo to evaluate rules_set corresponding to user_data.
 
 ### Data Objects:
 
