@@ -104,7 +104,7 @@ if __name__ == "__main__":
         ]
     }
     }
-    {
+    user_id = {
         "_id": 10001,
         "gender": "M",
         "name": "John doe",
