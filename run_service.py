@@ -7,42 +7,42 @@ Service interface for User Segmentation - Licious
 import os
 import settings
 
-from flask import (abort, Flask, Response, request, jsonify, json as fjson, make_response)
+from flask import (abort, Flask, Response, request, jsonify, make_response)
 from service.rest_util import *
 
 app = Flask(__name__)
 ALLOWED_IPS = ['127.0.0.1']
 
 
-@app.route('/validate/<user_id>/<segment_id>', methods=['GET,POST'])
-def get_user_segment(user_id,segment_id):
-    try:
-        res=evaluate_user_segment(user_id,segment_id)
-
-    except:
-        make_response({"success": False, "error_code": 400})
-    return make_response({"success": True,"message":res})
-
-@app.route('/validate/', methods=['GET,POST'])
+@app.route('/validatesingle/', methods=['GET', 'POST'])
 def get_user_segment():
-    res = dict()
-    query=request.json
     try:
+        print(request.args['user_id'], request.args['segment_id'])
+        user_id, segment_id = request.args['user_id'], request.args['segment_id']
+        print(user_id, segment_id)
+        res = evaluate_user_segment(user_id, segment_id)
 
-        # for query in request.json:
-        #     res[query[0]]=evaluate_user_segment(query[0],query[1])
-        res=bulk_identify_segment(query[0],query[1])
     except:
-        make_response({"success": False, "error_code": 400})
-    return make_response(jsonify(res))
+        return make_response({"success": False, "error_code": 400})
+    return make_response({"success": True, "message": res})
 
+
+@app.route('/validate/', methods=['GET', 'POST'])
+def get_user_segment_bulk():
+    res = dict()
+    query = request.json
+    try:
+        res = bulk_identify_segment(query[0], query[1])
+    except:
+        return make_response({"success": False, "error_code": 400})
+    return make_response(jsonify(res))
 
 
 @app.route('/user/', methods=['POST'])
 def insert_user():
     user_data = request.json
     try:
-        if isinstance(user_data,list):
+        if isinstance(user_data, list):
             bulk_insert_users(user_data)
         else:
             insert_new_user(user_data)
@@ -51,52 +51,38 @@ def insert_user():
     return make_response({"success": True})
 
 
+@app.route('/user/<id>/', methods=['GET'])
+def user_detail(id):
+    try:
+        res = get_user(id)
+    except:
+        make_response({"success": False, "error_code": 400})
+    return make_response(jsonify(res))
+
+
 @app.route('/segment/', methods=['POST'])
-def insert_segment():
+def insert_segment(id):
     segment_data = request.json
     try:
-        if isinstance(segment_data,list):
+        if isinstance(segment_data, list):
             bulk_insert_segments(segment_data)
         else:
-            insert_segment(segment_data)
+            insert_new_segment(segment_data)
     except:
         make_response({"success": False, "error_code": 400})
     return make_response({"success": True})
 
 
-# @app.route('/experiment', methods=['POST'])
-# def assign_experiment_group():
-#     query_parameters = request.args
-#     session_id = query_parameters.get('session_id')
-#     user_id = query_parameters.get('user_id')
-#     if not session_id or not user_id:
-#         return make_response({"success": False, "message": "Insufficient payload"}, 400)
-#     try:
-#         pass
-#     except Exception as e:
-#         return make_response({"exception": e}, 500)
-#     return make_response({"success": True}, 200)
-#
-#
-# @app.route('/experiment', methods=['GET'])
-# def get_group_by_experiment():
-#     query_parameters = request.args
-#     session_id = query_parameters.get('session_id')
-#     user_id = query_parameters.get('user_id')
-#     experiment_name = query_parameters.get('experiment_name')
-#     if not session_id or not user_id or not experiment_name:
-#         return make_response({"success": False, "message": "Insufficient payload"}, 400)
-#     try:
-#         group = None
-#     except Exception as e:
-#         return make_response({"exception": e, "group": None}, 500)
-#     return make_response({"success": True, "group": group}, 200)
-#
-#
+@app.route('/segment/<id>/', methods=['GET'])
+def segment_detail(id):
+    try:
+        res = get_segment(id)
+    except:
+        make_response({"success": False, "error_code": 400})
+    return make_response(jsonify(res))
+
+
+
+
 if __name__ == '__main__':
-    app.run(
-        host=settings.SERVICE_IP,
-        port=settings.SERVICE_PORT,
-        debug=os.environ.get('NIKI_ENV', 'production') in ('dev', 'beta'),
-        threaded=True
-    )
+    app.run()

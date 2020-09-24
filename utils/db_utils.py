@@ -1,7 +1,6 @@
 from service.validator import *
 from settings import *
 from pymongo import MongoClient
-
 from utils.exceptions import InvalidRuleException, IDNeededException
 from utils.singleton_util import SingletonFactory
 
@@ -54,8 +53,8 @@ class UserModel:
             raise IDNeededException
         resp = self.user_table.insert_many(json_objects)
 
-    def get_user_object(self, user_id):
-        res = self.user_table.find({"_id": user_id})
+    def get_user_detail(self, user_id):
+        res = list(self.user_table.find({"_id": user_id}))[0]
         return res
 
 

@@ -46,7 +46,39 @@ class SegmentModelUtil():
 
 
 if __name__ == "__main__":
-    segment_1 = {
+    # segment_1 = {
+    #     "or": [
+    #         {
+    #             "or":
+    #                 [
+    #                     {"gender": {"value": "F", "op": "eq"}},
+    #                     {"gender": {"value": "M", "op": "eq"}}
+    #                 ]
+    #         },
+    #         {
+    #             "or":
+    #                 [
+    #                     {
+    #                         "and": [
+    #                             {"gender": {"value": "F", "op": "eq"}},
+    #                             {"gender": {"value": "F", "op": "eq"}}
+    #                         ]
+    #                     },
+    #                     {
+    #                         "age": {"value": "15", "op": "eq"}
+    #                     }
+    #                 ]
+    #         }
+    #     ]
+    # }
+    # segment = {
+    #     "segment_name": "segment_1",
+    #     "segment_rule": segment_1
+    # }
+
+    segment = {
+        "segment_name": "segment_11",
+        "segment_rule": {
         "or": [
             {
                 "or":
@@ -71,9 +103,14 @@ if __name__ == "__main__":
             }
         ]
     }
-    segment = {
-        "segment_name": "segment_1",
-        "segment_rule": segment_1
+    }
+    {
+        "_id": 10001,
+        "gender": "M",
+        "name": "John doe",
+        "city": "Mumbai",
+        "email": "xyz@abc.com",
+        "age": 34
     }
     SegmentModelUtil().insert(segment)
-    SegmentModelUtil().get_segment_rule('segment_1')
+    # SegmentModelUtil().get_segment_rule('segment_11')

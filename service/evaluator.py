@@ -2,13 +2,14 @@ from utils.exceptions import InvalidRuleException
 from utils.operators import operators_config
 from utils.conjunctor_config import ConjunctorConfig
 from utils.user_getter import UserGetter
-from utils.db_utils import MongoAccess
+# from utils.db_utils import MongoAccess
 from utils.yaml_util import YAMLReader
 
 import os
+
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 
-db = MongoAccess()
+# db = MongoAccess()
 
 allowed_conjunctors = set(ConjunctorConfig)
 allowed_operators = set(operators_config)
@@ -16,9 +17,9 @@ allowed_rule_params = set(YAMLReader.load_config_from_yml(cur_dir, "/allowed_rul
 
 
 class Evaluation:
-    def __init__(self, user_data, segment_rule):
+    def __init__(self, user_data, segment):
         self.user_data = user_data
-        self.rule = segment_rule
+        self.rule = segment
 
     def validate(self, evaluate=True):
 
@@ -37,8 +38,10 @@ class Evaluation:
                         result = examine_rule(i, evaluate)
                         if break_on_true and result: return result
                         if break_on_false and not result: return result
-                        if res is None: res = result
-                        else: res = ConjunctorConfig.get(entity).evaluate(res, result)
+                        if res is None:
+                            res = result
+                        else:
+                            res = ConjunctorConfig.get(entity).evaluate(res, result)
                     return res
             raise InvalidRuleException
 
@@ -64,8 +67,9 @@ def expression_validator(operator, value):
         raise InvalidRuleException
     return True
 
-def evaluate_expression(entity, operator, value, user_data):
-    val = UserGetter(user_data).get_entity(entity)
+
+def evaluate_expression(entity, operator, value, user_val):
+    val = UserGetter(user_val).get_entity(entity)
     if val:
         try:
             if operators_config.get(operator)(val, value): return True
@@ -75,46 +79,89 @@ def evaluate_expression(entity, operator, value, user_data):
 
 
 if __name__ == "__main__":
-    segment_1 = {
-        "or": [
-            {
-                "or":
-                [
-                    {"gender": {"value": "F", "op": "eq"}},
-                    {"gender": {"value": "M", "op": "eq"}}
-                ]
-            },
-            {
-                "or":
-                    [
-                        {
-                            "and": [
-                                {"gender": {"value": "F", "op": "eq"}},
-                                {"gender": {"value": "F", "op": "eq"}}
-                            ]
-                        },
-                        {
-                            "age": {"value": "15", "op": "eq"}
-                        }
-                    ]
-            }
-        ]
-    }
-
-    # Leaf level dict
-    # list of evaluatable entitites superceeded by operator
-
-
+    #     segment_1 = {
+    #         "or": [
+    #             {
+    #                 "or":
+    #                 [
+    #                     {"gender": {"value": "F", "op": "eq"}},
+    #                     {"gender": {"value": "M", "op": "eq"}}
+    #                 ]
+    #             },
+    #             {
+    #                 "or":
+    #                     [
+    #                         {
+    #                             "and": [
+    #                                 {"gender": {"value": "F", "op": "eq"}},
+    #                                 {"gender": {"value": "F", "op": "eq"}}
+    #                             ]
+    #                         },
+    #                         {
+    #                             "age": {"value": "15", "op": "eq"}
+    #                         }
+    #                     ]
+    #             }
+    #         ]
+    #     }
+    #
+    #     # Leaf level dict
+    #     # list of evaluatable entitites superceeded by operator
+    #
+    #     rule={
+    #         "segment_name": "segment_9",
+    #         "segment_rule":{
+    #             "and": [{"age": {"value": "34", "op": "neq"}}, {"gender": {"value": "M", "op": "neq"}}]
+    #         }
+    #     }
+    #     user_data = {
+    #         "_id":10009,
+    #         "name": "Asha",
+    #         "gender": "M",
+    #         "age": "34"
+    #     }
+    #     print(Evaluation(user_data, rule).validate())
+    #     rule2={
+    #         "segment_name": "segment_8",
+    #         "segment_rule":{
+    #         "or": [
+    #             {
+    #                 "or":
+    #                 [
+    #                     {"gender": {"value": "F", "op": "eq"}},
+    #                     {"gender": {"value": "M", "op": "eq"}}
+    #                 ]
+    #             },
+    #             {
+    #                 "or":
+    #                     [
+    #                         {
+    #                             "and": [
+    #                                 {"gender": {"value": "F", "op": "eq"}},
+    #                                 {"gender": {"value": "F", "op": "eq"}}
+    #                             ]
+    #                         },
+    #                         {
+    #                             "age": {"value": "15", "op": "eq"}
+    #                         }
+    #                     ]
+    #             }
+    #         ]
+    #     }
+    #     }
+    #     user_data2 = {
+    #         "_id":10010,
+    #         "name": "Asha1",
+    #         "gender": "M",
+    #         "age": 20
+    #     }
+    #     print(Evaluation(user_data,rule2).validate())
+    rule = {'and': [{'age': {'value': '34', 'op': 'neq'}}, {'gender': {'value': 'M', 'op': 'neq'}}]}
     user_data = {
-        "name": "Asha",
-        "gender": "F",
-        "age": 15
-    }
-    print(Evaluation(user_data, 1).validate())
-
-    user_data = {
+        "_id": 10010,
         "name": "Asha1",
         "gender": "M",
         "age": 20
     }
-    print(Evaluation(user_data, 1).validate())
+    model = Evaluation(user_data, rule)
+    print(model.validate())
