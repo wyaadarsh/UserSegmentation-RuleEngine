@@ -6,8 +6,10 @@ class UserGetter:
         self.user_data = DotDict(user_data)
 
     def get_entity(self, entity):
-        # return self.user_data.get(entity)
-        return rgetattr(self.user_data, entity, None)
+        val = self.user_data.get(entity)
+        if not val:
+            val = rgetattr(self.user_data, entity, None)
+        return val
 
     def set_entity(self, entity):
         # return self.user_data.set(entity)
