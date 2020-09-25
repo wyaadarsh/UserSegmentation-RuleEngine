@@ -245,7 +245,12 @@ JSON
     - Request Body:
   
   ```
-  List - [user_id, [segment_ids]]
+  {
+  "user_id": 20001,
+  "segments": [
+  	"segment_30001", "segment_30002"
+  	]
+  }
   ```
 
 

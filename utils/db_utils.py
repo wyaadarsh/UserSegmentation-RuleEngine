@@ -54,7 +54,7 @@ class UserModel:
         resp = self.user_table.insert_many(json_objects)
 
     def get_user_detail(self, user_id):
-        res = list(self.user_table.find({"_id": user_id}))[0]
+        res = list(self.user_table.find({"_id": int(user_id)}))[0]
         return res
 
 

@@ -29,7 +29,7 @@ def get_user_segments():
     res = dict()
     query = request.json
     try:
-        res = bulk_identify_segment(query[0], query[1])
+        res = bulk_identify_segment(query.get('user_id'), query.get('segments'))
     except:
         return make_response({"success": False, "error_code": 400})
     return make_response(jsonify(res))
@@ -58,7 +58,7 @@ def user_detail(id):
 
 
 @app.route('/segment/', methods=['POST'])
-def insert_segment(id):
+def insert_segment():
     segment_data = request.json
     try:
         if isinstance(segment_data, list):
