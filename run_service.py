@@ -44,7 +44,7 @@ def insert_user():
         else:
             insert_new_user(user_data)
     except:
-        make_response({"success": False, "error_code": 400})
+        return make_response({"success": False, "error_code": 400})
     return make_response({"success": True})
 
 
@@ -53,7 +53,7 @@ def user_detail(id):
     try:
         res = get_user(id)
     except:
-        make_response({"success": False, "error_code": 400})
+        return make_response({"success": False, "error_code": 400})
     return make_response(jsonify(res))
 
 
@@ -66,7 +66,7 @@ def insert_segment(id):
         else:
             insert_new_segment(segment_data)
     except:
-        make_response({"success": False, "error_code": 400})
+        return make_response({"success": False, "error_code": 400})
     return make_response({"success": True})
 
 
@@ -75,7 +75,7 @@ def segment_detail(id):
     try:
         res = get_segment(id)
     except:
-        make_response({"success": False, "error_code": 400})
+        return make_response({"success": False, "error_code": 400})
     return make_response(jsonify(res))
 
 
