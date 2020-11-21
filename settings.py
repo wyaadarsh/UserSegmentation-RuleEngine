@@ -1,4 +1,4 @@
-MONGO_URL = "mongodb+srv://admin:admin@cluster0.loggx.mongodb.net"
+MONGO_URL = "cluster.mongodb.net"
 SEGMENTATION_DB = "user_auth"
 USERS_TABLE = "users"
 SEGMENTS_TABLE = "segments"
